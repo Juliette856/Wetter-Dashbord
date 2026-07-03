@@ -8,43 +8,46 @@ const app = express();
 app.use(express.static(path.join(__dirname, "src")));
 
 // API route
-app.get("/api/getWeather", async (req, res) => {
+app.get("/api/getweather", async (req, res) => {
     const city = req.query.city;
-    const apiKey = process.env.OPENWEATHER_KEY;
+    const apikey = process.env.OPENWEATHER_KEY;
 
     if (!city) {
         return res.status(400).json({ error: "City is required" });
     }
 
-    if (!apiKey) {
+    if (!apikey) {
         return res.status(500).json({ error: "OPENWEATHER_KEY is not configured" });
     }
 
     try {
         const url =
-            `https://api.openweathermap.org/data/2.5/weather` +
-            `?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=de`;
+            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apikey}&units=metric&lang=de`;
 
         const response = await fetch(url);
-        const w = await response.json();
+        const data = await response.json();
 
-        if (!response.ok) {
-            return res.status(500).json({ error: w.message || "API error" });
+        if (data.cod !== 200) {
+            return res.status(500).json({ error: "Unable to fetch weather for this city" });
         }
 
-        res.json({
-            name: w.name,
-            temp: w.main.temp,
-            feels_like: w.main.feels_like,
-            humidity: w.main.humidity,
-            description: w.weather[0].description,
-            icon: w.weather[0].icon
+        return res.json({
+            name: data.name,
+            temp: data.main.temp,
+            feels_like: data.main.feels_like,
+            humidity: data.main.humidity,
+            description: data.weather[0].description,
+            icon: data.weather[0].icon
         });
-    } catch (err) {
-        res.status(500).json({ error: "Unable to fetch weather for this city" });
+
+    } catch (error) {
+        return res.status(500).json({ error: "Server error" });
     }
 });
 
 // Start server
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
+
