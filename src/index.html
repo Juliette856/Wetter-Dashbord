@@ -1,44 +1,383 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Wetter Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wetter Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #ffffff;
+            margin: 0;
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #0d2c54;
+        }
+
+        h1 {
+            color: #0d47a1;
+            font-size: 2.4rem;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: #5b7a9d;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        #search-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 34px;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        input {
+            flex: 1;
+            padding: 20px 22px;
+            border: 2px solid #cfe3fb;
+            border-radius: 14px;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 15px rgba(13, 71, 161, 0.08);
+            outline: none;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        input:focus {
+            border-color: #1976d2;
+            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.18);
+        }
+
+        button {
+            padding: 18px 30px;
+            background: #1976d2;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(13, 71, 161, 0.15);
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+
+        button:hover {
+            background: #0d47a1;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #weather {
+            width: 100%;
+            max-width: 640px;
+            min-height: 60px;
+        }
+
+        .card {
+            background: #f5f9ff;
+            padding: 28px 24px;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(13, 71, 161, 0.12);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .card h2 {
+            margin: 0 0 4px;
+            color: #0d47a1;
+            font-size: 1.5rem;
+        }
+
+        .updated {
+            font-size: 0.8rem;
+            color: #789;
+            margin-bottom: 6px;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin: 10px 0;
+        }
+
+        .temp {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #0d2c54;
+            margin: 0 0 6px;
+        }
+
+        .condition {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            text-align: left;
+            border-top: 1px solid #dce7f5;
+            padding-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        .details div {
+            font-size: 0.92rem;
+            color: #444;
+        }
+
+        .details strong {
+            display: block;
+            color: #0d47a1;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 2px;
+        }
+
+        .forecast {
+            margin-top: 22px;
+            border-top: 1px solid #dce7f5;
+            padding-top: 18px;
+        }
+
+        .forecast h3 {
+            margin: 0 0 12px;
+            color: #0d47a1;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .forecast-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+
+        .forecast-day {
+            flex: 0 0 auto;
+            width: 78px;
+            background: white;
+            border-radius: 12px;
+            padding: 12px 6px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(13, 71, 161, 0.08);
+        }
+
+        .forecast-day .day-name {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #0d47a1;
+            margin-bottom: 4px;
+        }
+
+        .forecast-day .day-icon {
+            font-size: 1.6rem;
+            margin: 4px 0;
+        }
+
+        .forecast-day .day-max {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0d2c54;
+        }
+
+        .forecast-day .day-min {
+            font-size: 0.8rem;
+            color: #789;
+        }
+
+        .message {
+            background: #f5f9ff;
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+            color: #b71c1c;
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.1);
+        }
+
+        .message.loading {
+            color: #0d47a1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            #search-container {
+                flex-direction: column;
+            }
+
+            .details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
-<body class="bg-sky-50 min-h-screen flex items-center justify-center p-4">
-  <div class="max-w-xl w-full bg-white rounded-2xl shadow-lg p-6">
-    <h1 class="text-3xl font-bold text-center mb-4 text-sky-700">
-      Wetter Dashboard
-    </h1>
+<body>
 
-    <p class="text-center text-gray-600 mb-4">
-      Gib eine Stadt ein und erhalte aktuelle Wetterdaten.
-    </p>
+    <h1>Wetter Dashboard</h1>
+    <p class="subtitle">Aktuelle Wetterdaten und Vorhersage für jede Stadt weltweit</p>
 
-    <div class="flex gap-2 mb-4">
-      <input
-        id="cityInput"
-        class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-400"
-        placeholder="z.B. Berlin, Paris, Crailsheim"
-      />
-      <button
-        onclick="loadWeather()"
-        class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg"
-      >
-        Wetter
-      </button>
+    <div id="search-container">
+        <input type="text" id="cityInput" placeholder="Stadt eingeben..." onkeydown="if(event.key === 'Enter') getWeather()">
+        <button onclick="getWeather()">Suchen</button>
     </div>
 
-    <div id="status" class="text-sm text-gray-500 mb-2"></div>
+    <div id="weather"></div>
 
-    <div
-      id="result"
-      class="mt-4 border rounded-xl p-4 bg-sky-50 hidden"
-    ></div>
-  </div>
+    <script>
+        // WMO-Wettercodes: Beschreibung und Icon (Open-Meteo)
+        const weatherCodes = {
+            0: ["Klarer Himmel", "☀️"],
+            1: ["Überwiegend klar", "🌤️"],
+            2: ["Teilweise bewölkt", "⛅"],
+            3: ["Bedeckt", "☁️"],
+            45: ["Nebel", "🌫️"],
+            48: ["Reifnebel", "🌫️"],
+            51: ["Leichter Nieselregen", "🌦️"],
+            53: ["Nieselregen", "🌦️"],
+            55: ["Starker Nieselregen", "🌧️"],
+            61: ["Leichter Regen", "🌦️"],
+            63: ["Regen", "🌧️"],
+            65: ["Starker Regen", "🌧️"],
+            66: ["Gefrierender Regen", "🌧️"],
+            67: ["Starker gefrierender Regen", "🌧️"],
+            71: ["Leichter Schneefall", "🌨️"],
+            73: ["Schneefall", "❄️"],
+            75: ["Starker Schneefall", "❄️"],
+            77: ["Schneegriesel", "❄️"],
+            80: ["Leichte Regenschauer", "🌦️"],
+            81: ["Regenschauer", "🌧️"],
+            82: ["Heftige Regenschauer", "⛈️"],
+            85: ["Leichte Schneeschauer", "🌨️"],
+            86: ["Starke Schneeschauer", "❄️"],
+            95: ["Gewitter", "⛈️"],
+            96: ["Gewitter mit Hagel", "⛈️"],
+            99: ["Schweres Gewitter mit Hagel", "⛈️"]
+        };
 
-  <script src="app.js"></script>
+        function describeWeather(code) {
+            return weatherCodes[code] || ["Unbekannt", "🌡️"];
+        }
+
+        function render(html) {
+            document.getElementById("weather").innerHTML = html;
+        }
+
+        function formatTime(isoString) {
+            return isoString.slice(11, 16);
+        }
+
+        function dayLabel(dateString, index) {
+            if (index === 0) return "Heute";
+            if (index === 1) return "Morgen";
+            const date = new Date(dateString);
+            return date.toLocaleDateString("de-DE", { weekday: "short" });
+        }
+
+        async function getWeather() {
+            const city = document.getElementById("cityInput").value.trim();
+            if (!city) {
+                render('<div class="message">Bitte eine Stadt eingeben.</div>');
+                return;
+            }
+
+            render('<div class="message loading">Lade Wetterdaten …</div>');
+
+            const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=de`;
+
+            try {
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    render('<div class="message">Stadt nicht gefunden.</div>');
+                    return;
+                }
+
+                const { latitude, longitude, name, country } = geoData.results[0];
+
+                const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+                    `&current_weather=true` +
+                    `&hourly=relativehumidity_2m,apparent_temperature,surface_pressure,uv_index` +
+                    `&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset` +
+                    `&timezone=auto&forecast_days=16`;
+                const meteoRes = await fetch(meteoUrl);
+                const meteoData = await meteoRes.json();
+
+                const w = meteoData.current_weather;
+                const [condition, icon] = describeWeather(w.weathercode);
+
+                const hourIndex = Math.max(0, meteoData.hourly.time.indexOf(w.time));
+                const humidity = meteoData.hourly.relativehumidity_2m[hourIndex];
+                const feelsLike = meteoData.hourly.apparent_temperature[hourIndex];
+                const pressure = meteoData.hourly.surface_pressure[hourIndex];
+                const uv = meteoData.hourly.uv_index[hourIndex];
+
+                const daily = meteoData.daily;
+                const sunrise = formatTime(daily.sunrise[0]);
+                const sunset = formatTime(daily.sunset[0]);
+                const precipToday = daily.precipitation_sum[0];
+
+                const forecastDays = daily.time.map((date, i) => {
+                    const [, dayIcon] = describeWeather(daily.weathercode[i]);
+                    return `
+                        <div class="forecast-day">
+                            <div class="day-name">${dayLabel(date, i)}</div>
+                            <div class="day-icon">${dayIcon}</div>
+                            <div class="day-max">${Math.round(daily.temperature_2m_max[i])}°</div>
+                            <div class="day-min">${Math.round(daily.temperature_2m_min[i])}°</div>
+                        </div>
+                    `;
+                }).join("");
+
+                render(`
+                    <div class="card">
+                        <h2>${name}${country ? ", " + country : ""}</h2>
+                        <div class="updated">Stand: ${formatTime(w.time)} Uhr</div>
+                        <div class="icon">${icon}</div>
+                        <p class="temp">${w.temperature}°C</p>
+                        <p class="condition">${condition}</p>
+                        <div class="details">
+                            <div><strong>Gefühlt</strong>${Math.round(feelsLike)}°C</div>
+                            <div><strong>Luftfeuchtigkeit</strong>${humidity}%</div>
+                            <div><strong>Luftdruck</strong>${Math.round(pressure)} hPa</div>
+                            <div><strong>Wind</strong>${w.windspeed} km/h</div>
+                            <div><strong>Windrichtung</strong>${w.winddirection}°</div>
+                            <div><strong>UV-Index</strong>${uv}</div>
+                            <div><strong>Niederschlag heute</strong>${precipToday} mm</div>
+                            <div><strong>Sonnenaufgang</strong>${sunrise} Uhr</div>
+                            <div><strong>Sonnenuntergang</strong>${sunset} Uhr</div>
+                        </div>
+                        <div class="forecast">
+                            <h3>16-Tage-Vorhersage</h3>
+                            <div class="forecast-scroll">${forecastDays}</div>
+                        </div>
+                    </div>
+                `);
+            } catch (error) {
+                render('<div class="message">Fehler beim Abrufen der Wetterdaten.</div>');
+            }
+        }
+    </script>
+
 </body>
 </html>
